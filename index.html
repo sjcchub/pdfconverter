@@ -3,156 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image to PDF Converter</title>
-    <!-- Importing Google Fonts for a cleaner look -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <title>Image to PDF Generator</title>
     <style>
-        :root {
-            --primary: #4F46E5;
-            --primary-hover: #4338CA;
-            --bg: #F3F4F6;
-            --text: #1F2937;
-            --border: #D1D5DB;
-        }
-
+        /* Base Reset & Layout */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
             margin: 0;
-            padding: 2rem;
+            padding: 0;
             display: flex;
-            justify-content: center;
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
         }
 
-        .container {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 800px;
-            text-align: center;
+        /* Left Sidebar Controls */
+        .sidebar {
+            width: 320px;
+            background-color: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            padding: 24px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            z-index: 10;
         }
 
-        h1 {
-            margin-top: 0;
-            color: var(--text);
+        .sidebar h1 {
+            font-size: 1.25rem;
+            margin: 0 0 10px 0;
+            line-height: 1.3;
         }
 
-        .upload-area {
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 2rem;
-            margin: 1.5rem 0;
-            background-color: #F9FAFB;
-            transition: border-color 0.3s;
+        .sidebar p.subtitle {
+            font-size: 0.85rem;
+            color: #666;
+            margin: 0 0 20px 0;
+            line-height: 1.4;
         }
 
-        .upload-area:hover {
-            border-color: var(--primary);
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
         }
 
         input[type="file"] {
-            display: none;
-        }
-
-        .custom-file-upload {
-            background-color: var(--primary);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            display: inline-block;
-            transition: background-color 0.3s;
-        }
-
-        .custom-file-upload:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .preview-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
-            text-align: left;
-        }
-
-        .preview-card {
-            position: relative;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            overflow: hidden;
-            aspect-ratio: 1 / 1;
-        }
-
-        .preview-card img {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 0.85rem;
+            background-color: #fcfcfc;
+            cursor: pointer;
         }
 
-        .remove-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(255, 0, 0, 0.8);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            font-size: 12px;
+        /* File List in Sidebar */
+        .file-list {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
         }
 
-        .generate-btn {
-            background-color: #10B981;
-            color: white;
-            padding: 12px 24px;
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .file-item span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        .delete-btn {
+            background: none;
             border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
+            color: #ff4d4f;
             cursor: pointer;
-            width: 100%;
-            margin-top: 2rem;
-            transition: opacity 0.3s;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 0 5px;
+        }
+
+        .delete-btn:hover {
+            color: #cc0000;
+        }
+
+        /* Generate Button */
+        .generate-btn {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: auto; /* Pushes button lower if space allows */
         }
 
         .generate-btn:hover {
-            background-color: #059669;
+            background-color: #333;
         }
 
         .generate-btn:disabled {
-            background-color: #9CA3AF;
+            background-color: #ccc;
             cursor: not-allowed;
-            opacity: 0.7;
+        }
+
+        .footer-note {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 15px;
+            line-height: 1.4;
+        }
+
+        /* Right Side Preview Area */
+        .preview-area {
+            flex: 1;
+            padding: 40px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* A4 Page Styling */
+        .a4-page {
+            width: 100%;
+            max-width: 600px; /* Limits size on ultra-wide screens */
+            aspect-ratio: 1 / 1.414; /* A4 Paper Aspect Ratio */
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid #ddd;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 4%; /* Simulates the 10mm margin from jsPDF */
+            box-sizing: border-box;
+        }
+
+        .a4-page img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Ensures image isn't stretched */
+        }
+
+        .page-number {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .empty-state {
+            color: #888;
+            font-size: 1.1rem;
+            margin-top: 20vh;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Image to PDF Converter</h1>
-        <p>Select one or more photos to combine into a single PDF document.</p>
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <h1>Image to PDF Generator</h1>
+        <p class="subtitle">Upload photos and arrange them to generate a clean, downloadable PDF document.</p>
 
-        <div class="upload-area">
-            <label for="imageInput" class="custom-file-upload">
-                Choose Images
-            </label>
+        <div class="input-group">
+            <label for="imageInput">Upload Photos</label>
             <input type="file" id="imageInput" accept="image/png, image/jpeg, image/jpg" multiple>
-            <p style="font-size: 0.875rem; color: #6B7280; margin-top: 1rem;">Supports JPG, JPEG, PNG</p>
         </div>
 
-        <div class="preview-container" id="previewContainer"></div>
+        <div class="file-list" id="fileList">
+            <!-- File names will populate here -->
+        </div>
 
-        <button id="generateBtn" class="generate-btn" disabled>Generate & Download PDF</button>
+        <button id="generateBtn" class="generate-btn" disabled>Generate PDF</button>
+        
+        <p class="footer-note">Images are processed entirely on your device. No data is uploaded to any server.</p>
+    </div>
+
+    <!-- Right Preview Area -->
+    <div class="preview-area" id="previewArea">
+        <div class="empty-state">Upload images to see the PDF preview here.</div>
+        <!-- A4 Pages will render here -->
     </div>
 
     <!-- Load jsPDF from CDN -->
@@ -160,7 +215,8 @@
     
     <script>
         const imageInput = document.getElementById('imageInput');
-        const previewContainer = document.getElementById('previewContainer');
+        const previewArea = document.getElementById('previewArea');
+        const fileList = document.getElementById('fileList');
         const generateBtn = document.getElementById('generateBtn');
         
         let imagesArray = [];
@@ -179,88 +235,91 @@
                         name: file.name,
                         data: imageDataUrl
                     });
-                    renderPreview();
-                    updateGenerateButton();
+                    renderUI();
                 };
                 reader.readAsDataURL(file);
             });
             
-            // Clear input so the same files can be selected again if needed
-            imageInput.value = ''; 
+            imageInput.value = ''; // Reset input
         });
 
-        // Render the image preview grid
-        function renderPreview() {
-            previewContainer.innerHTML = '';
+        // Main render function for both the sidebar list and main preview
+        function renderUI() {
+            fileList.innerHTML = '';
+            previewArea.innerHTML = '';
             
+            if (imagesArray.length === 0) {
+                previewArea.innerHTML = '<div class="empty-state">Upload images to see the PDF preview here.</div>';
+                generateBtn.disabled = true;
+                return;
+            }
+
+            generateBtn.disabled = false;
+
             imagesArray.forEach((imgObj, index) => {
-                const card = document.createElement('div');
-                card.className = 'preview-card';
+                // 1. Render Sidebar List Item
+                const listItem = document.createElement('div');
+                listItem.className = 'file-item';
+                
+                const fileName = document.createElement('span');
+                fileName.innerText = `${index + 1}. ${imgObj.name}`;
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = '&times;';
+                deleteBtn.title = "Remove image";
+                deleteBtn.onclick = () => {
+                    imagesArray.splice(index, 1);
+                    renderUI(); // Re-render everything on delete
+                };
+
+                listItem.appendChild(fileName);
+                listItem.appendChild(deleteBtn);
+                fileList.appendChild(listItem);
+
+                // 2. Render A4 Page Preview
+                const page = document.createElement('div');
+                page.className = 'a4-page';
                 
                 const img = document.createElement('img');
                 img.src = imgObj.data;
                 
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-btn';
-                removeBtn.innerHTML = '✕';
-                removeBtn.onclick = () => {
-                    imagesArray.splice(index, 1);
-                    renderPreview();
-                    updateGenerateButton();
-                };
-                
-                card.appendChild(img);
-                card.appendChild(removeBtn);
-                previewContainer.appendChild(card);
-            });
-        }
+                const pageNum = document.createElement('div');
+                pageNum.className = 'page-number';
+                pageNum.innerText = `Page ${index + 1}`;
 
-        // Enable/Disable the generate button based on array length
-        function updateGenerateButton() {
-            if (imagesArray.length > 0) {
-                generateBtn.removeAttribute('disabled');
-            } else {
-                generateBtn.setAttribute('disabled', 'true');
-            }
+                page.appendChild(img);
+                page.appendChild(pageNum);
+                previewArea.appendChild(page);
+            });
         }
 
         // Handle PDF generation
         generateBtn.addEventListener('click', async () => {
             if (imagesArray.length === 0) return;
             
-            // Change button state to show progress
             const originalText = generateBtn.innerText;
-            generateBtn.innerText = "Generating PDF...";
+            generateBtn.innerText = "Processing...";
             generateBtn.disabled = true;
 
-            // Initialize jsPDF (A4 size by default)
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF();
             
             const pageWidth = pdf.internal.pageSize.getWidth();
             const pageHeight = pdf.internal.pageSize.getHeight();
 
-            // Loop through images and add to PDF
             for (let i = 0; i < imagesArray.length; i++) {
-                if (i > 0) {
-                    pdf.addPage();
-                }
+                if (i > 0) pdf.addPage();
 
                 const imgData = imagesArray[i].data;
-                
-                // We need to load the image dynamically to get its natural dimensions
                 const img = await loadImage(imgData);
                 
-                // Calculate aspect ratios to fit the image on the A4 page
                 const imgRatio = img.width / img.height;
-                const pageRatio = pageWidth / pageHeight;
-                
-                let renderWidth, renderHeight;
-
-                // Scale the image down to fit within the page margins (10mm padding)
-                const padding = 10;
+                const padding = 10; 
                 const maxRenderWidth = pageWidth - (padding * 2);
                 const maxRenderHeight = pageHeight - (padding * 2);
+
+                let renderWidth, renderHeight;
 
                 if (imgRatio > (maxRenderWidth / maxRenderHeight)) {
                     renderWidth = maxRenderWidth;
@@ -270,25 +329,19 @@
                     renderWidth = maxRenderHeight * imgRatio;
                 }
                 
-                // Center the image horizontally and vertically
                 const x = (pageWidth - renderWidth) / 2;
                 const y = (pageHeight - renderHeight) / 2;
                 
-                // Determine format (JPEG or PNG)
                 const format = imgData.substring(5, imgData.indexOf(';')).includes('png') ? 'PNG' : 'JPEG';
-                
                 pdf.addImage(imgData, format, x, y, renderWidth, renderHeight);
             }
 
-            // Save the document
-            pdf.save('Generated_Document.pdf');
+            pdf.save('Image_Collection.pdf');
             
-            // Reset button
             generateBtn.innerText = originalText;
             generateBtn.disabled = false;
         });
 
-        // Helper function to load image to get dimensions
         function loadImage(src) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
