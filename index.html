@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro PDF | Merge Images & PDFs</title>
-    <!-- Libraries -->
+    <title>Pro PDF | Merge & Preview</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,33 +21,42 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; display: flex; height: 100vh; background-color: var(--preview-bg); color: var(--text-main); overflow: hidden; }
 
-        /* Sidebar */
         .sidebar { width: 360px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 32px 24px; z-index: 20; box-shadow: 10px 0 15px -3px rgba(0, 0, 0, 0.05); }
         h1 { font-size: 1.5rem; font-weight: 700; color: #0f172a; letter-spacing: -0.025em; }
         .subtitle { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 24px; }
 
-        .btn-upload { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s; margin-bottom: 20px; }
+        .btn-upload { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s; margin-bottom: 12px; }
         .btn-upload:hover { border-color: var(--accent); background: #eff6ff; color: var(--accent); }
 
-        #fileList { flex: 1; overflow-y: auto; margin-bottom: 20px; }
-        .file-item { display: flex; align-items: center; background: #fff; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; cursor: grab; font-size: 0.8rem; }
-        .file-type-icon { margin-right: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 10px; color: white; }
-        .icon-img { background: #8b5cf6; }
-        .icon-pdf { background: #ef4444; }
+        .clear-btn { background: #fee2e2; color: #b91c1c; border: none; padding: 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
+        .clear-btn:hover { background: #fecaca; }
+
+        #fileList { flex: 1; overflow-y: auto; margin-bottom: 20px; padding-right: 5px; }
+        .file-item { display: flex; align-items: center; background: #fff; padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; cursor: grab; font-size: 0.75rem; transition: 0.2s; }
+        .file-item:hover { border-color: var(--accent); }
+        
+        .file-type-tag { padding: 2px 6px; border-radius: 4px; font-size: 9px; color: white; font-weight: bold; margin-right: 8px; flex-shrink: 0; }
+        .tag-img { background: #8b5cf6; }
+        .tag-pdf { background: #ef4444; }
+
+        .preview-link { color: var(--accent); text-decoration: underline; cursor: pointer; font-size: 0.7rem; margin-left: 5px; }
 
         .generate-btn { background: #0f172a; color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .generate-btn:disabled { background: #94a3b8; cursor: not-allowed; }
 
         /* Preview Area */
         .preview-area { flex: 1; padding: 60px 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 40px; }
-        .preview-frame { position: relative; background: white; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); width: min(600px, 90%); }
+        .preview-frame { position: relative; background: white; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); width: min(600px, 90%); border-radius: 4px; overflow: hidden; }
         .preview-frame img { display: block; width: 100%; height: auto; }
         
-        /* PDF Placeholder in Preview */
-        .pdf-preview-box { height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f1f5f9; color: #475569; font-weight: 600; }
-        .pdf-preview-box svg { width: 48px; height: 48px; margin-bottom: 12px; color: #ef4444; }
+        .pdf-card { height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; transition: 0.3s; text-align: center; padding: 20px; }
+        .pdf-card:hover { background: #f1f5f9; }
+        .pdf-card svg { width: 50px; height: 50px; color: #ef4444; margin-bottom: 15px; }
+        .pdf-card span { font-size: 0.85rem; font-weight: 600; color: #334155; }
+        .pdf-card small { color: var(--accent); margin-top: 8px; font-weight: 500; }
 
         .page-badge { position: absolute; left: -80px; top: 0; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; border: 1px solid rgba(255,255,255,0.2); }
+        @media (max-width: 1000px) { .page-badge { left: 10px; top: -35px; background: var(--accent); } }
 
         .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -58,15 +66,17 @@
 
     <div class="sidebar">
         <div class="header-section">
-            <h1>PDF Merger</h1>
-            <p class="subtitle">Combine Images & PDFs into one.</p>
+            <h1>PDF Studio</h1>
+            <p class="subtitle">Merge images and PDFs flawlessly.</p>
         </div>
 
         <label class="btn-upload">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
-            <span>Add Files (IMG/PDF)</span>
+            <span>Add Files</span>
             <input type="file" id="fileInput" accept="image/*, application/pdf" multiple style="display: none;">
         </label>
+
+        <button class="clear-btn" id="clearAllBtn" style="display: none;">Clear All Files</button>
 
         <div id="fileList"></div>
 
@@ -83,6 +93,7 @@
         const previewArea = document.getElementById('previewArea');
         const fileList = document.getElementById('fileList');
         const generateBtn = document.getElementById('generateBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
         const loader = document.getElementById('loader');
         const btnText = document.getElementById('btnText');
 
@@ -104,25 +115,27 @@
             const files = Array.from(e.target.files);
             for (const file of files) {
                 const isPdf = file.type === 'application/pdf';
-                const data = await readFileAsArrayBuffer(file);
+                const buffer = await file.arrayBuffer();
+                const blob = new Blob([buffer], { type: file.type });
+                const blobUrl = URL.createObjectURL(blob);
                 
                 assets.push({
                     id: Math.random().toString(36).substr(2, 9),
                     name: file.name,
                     type: isPdf ? 'pdf' : 'image',
-                    buffer: data,
-                    // For image previewing
-                    dataUrl: isPdf ? null : await readFileAsDataURL(file)
+                    buffer: buffer,
+                    blobUrl: blobUrl
                 });
             }
             renderAll();
             fileInput.value = '';
         });
 
-        function readFileAsArrayBuffer(file) { return new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsArrayBuffer(file); }); }
-        function readFileAsDataURL(file) { return new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file); }); }
-
-        function renderAll() { renderList(); renderPreviews(); }
+        function renderAll() {
+            renderList();
+            renderPreviews();
+            clearAllBtn.style.display = assets.length > 0 ? 'block' : 'none';
+        }
 
         function renderList() {
             fileList.innerHTML = '';
@@ -131,9 +144,10 @@
                 div.className = 'file-item';
                 div.setAttribute('data-id', item.id);
                 div.innerHTML = `
-                    <span class="file-type-icon ${item.type === 'pdf' ? 'icon-pdf' : 'icon-img'}">${item.type.toUpperCase()}</span>
+                    <span class="file-type-tag ${item.type === 'pdf' ? 'tag-pdf' : 'tag-img'}">${item.type.toUpperCase()}</span>
                     <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${item.name}</span>
-                    <button class="remove-btn" onclick="removeItem('${item.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-weight:bold; margin-left:8px;">&times;</button>
+                    ${item.type === 'pdf' ? `<span class="preview-link" onclick="openPreview('${item.blobUrl}')">Preview</span>` : ''}
+                    <button onclick="removeItem('${item.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:16px; margin-left:8px;">&times;</button>
                 `;
                 fileList.appendChild(div);
             });
@@ -146,53 +160,63 @@
                 const frame = document.createElement('div');
                 frame.className = 'preview-frame';
                 if (item.type === 'image') {
-                    frame.innerHTML = `<div class="page-badge">PAGE ${i+1}</div><img src="${item.dataUrl}">`;
+                    frame.innerHTML = `<div class="page-badge">PAGE ${i+1}</div><img src="${item.blobUrl}">`;
                 } else {
                     frame.innerHTML = `
                         <div class="page-badge">PAGE ${i+1} (PDF)</div>
-                        <div class="pdf-preview-box">
+                        <div class="pdf-card" onclick="openPreview('${item.blobUrl}')">
                             <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path><path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path></svg>
                             <span>${item.name}</span>
+                            <small>Click to view full PDF</small>
                         </div>`;
                 }
                 previewArea.appendChild(frame);
             });
         }
 
-        window.removeItem = (id) => { assets = assets.filter(a => a.id !== id); renderAll(); };
+        window.openPreview = (url) => { window.open(url, '_blank'); };
+
+        window.removeItem = (id) => {
+            const item = assets.find(a => a.id === id);
+            if (item) URL.revokeObjectURL(item.blobUrl);
+            assets = assets.filter(a => a.id !== id);
+            renderAll();
+        };
+
+        clearAllBtn.onclick = () => {
+            assets.forEach(a => URL.revokeObjectURL(a.blobUrl));
+            assets = [];
+            renderAll();
+        };
 
         generateBtn.addEventListener('click', async () => {
             loader.style.display = 'block';
-            btnText.innerText = 'Merging Files...';
+            btnText.innerText = 'Processing...';
             generateBtn.disabled = true;
 
             try {
                 const mergedPdf = await PDFLib.PDFDocument.create();
-
                 for (const asset of assets) {
                     if (asset.type === 'pdf') {
                         const donorPdf = await PDFLib.PDFDocument.load(asset.buffer);
                         const pages = await mergedPdf.copyPages(donorPdf, donorPdf.getPageIndices());
                         pages.forEach(page => mergedPdf.addPage(page));
                     } else {
-                        // Handle Image
-                        const image = asset.dataUrl.includes('png') 
-                            ? await mergedPdf.embedPng(asset.buffer)
-                            : await mergedPdf.embedJpg(asset.buffer);
-                        
+                        const imgBytes = asset.buffer;
+                        const image = asset.name.toLowerCase().endsWith('.png') 
+                            ? await mergedPdf.embedPng(imgBytes)
+                            : await mergedPdf.embedJpg(imgBytes);
                         const page = mergedPdf.addPage([image.width, image.height]);
                         page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
                     }
                 }
-
                 const pdfBytes = await mergedPdf.save();
-                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
                 const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = 'Merged_Document.pdf';
+                link.href = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+                link.download = 'Studio_Merge.pdf';
                 link.click();
             } catch (err) {
-                alert("Error merging files: " + err.message);
+                alert("Merge Error: " + err.message);
             } finally {
                 loader.style.display = 'none';
                 btnText.innerText = 'Export Merged PDF';
