@@ -3,160 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image to PDF - Reorder Enabled</title>
+    <title>PDF Gen | Drag & Drop</title>
+    <!-- SortableJS for Drag and Drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <!-- jsPDF for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
     <style>
+        :root {
+            --sidebar-width: 340px;
+            --accent: #2563eb;
+        }
+
         body {
             margin: 0;
             display: flex;
             height: 100vh;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f0f0f0;
-            overflow: hidden;
+            background-color: #f3f4f6;
+            color: #111827;
         }
 
-        /* Sidebar Styling */
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: auto; }
+            .sidebar { width: 100% !important; border-right: none !important; border-bottom: 1px solid #ddd; }
+            .preview-area { height: 60vh; }
+        }
+
         .sidebar {
-            width: 340px;
+            width: var(--sidebar-width);
             background: white;
-            border-right: 1px solid #ddd;
+            border-right: 1px solid #e5e7eb;
             padding: 24px;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
             flex-shrink: 0;
-            z-index: 10;
         }
 
-        h1 { font-size: 1.3rem; margin: 0 0 8px 0; }
-        .subtitle { font-size: 0.85rem; color: #666; margin-bottom: 24px; }
+        h1 { font-size: 1.25rem; margin: 0 0 4px 0; }
+        .subtitle { font-size: 0.8rem; color: #6b7280; margin-bottom: 20px; }
 
-        .input-group { margin-bottom: 20px; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
-        
-        input[type="file"] {
+        .btn-upload {
+            display: block;
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background: #fafafa;
-            font-size: 0.8rem;
+            padding: 12px;
+            background: #f9fafb;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            margin-bottom: 20px;
         }
 
-        /* Reorderable List Items */
-        .file-list { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
-        
+        .btn-upload:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Sortable List Styling */
+        #fileList {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
         .file-item {
             display: flex;
             align-items: center;
-            background: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            border: 1px solid #ddd;
-            transition: transform 0.2s;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            cursor: grab;
+            user-select: none;
+            touch-action: none; /* Required for mobile drag */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .file-item:active { cursor: grabbing; }
+        .sortable-ghost { opacity: 0.4; background: #ebf5ff; }
+
+        .handle {
+            margin-right: 12px;
+            color: #9ca3af;
+            cursor: grab;
         }
 
         .file-name {
             flex: 1;
+            font-size: 0.85rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-right: 10px;
-            font-weight: 500;
         }
 
-        .controls {
-            display: flex;
-            gap: 4px;
-        }
-
-        .control-btn {
-            border: 1px solid #eee;
-            background: #f9f9f9;
-            border-radius: 4px;
-            cursor: pointer;
-            padding: 2px 6px;
-            font-size: 12px;
-        }
-
-        .control-btn:hover { background: #e0e0e0; }
-        .remove-btn { color: #ff4d4f; border-color: #ffeef0; }
-        .remove-btn:hover { background: #ff4d4f; color: white; }
-
-        .generate-btn {
-            background: #000;
-            color: #fff;
+        .remove-btn {
+            background: none;
             border: none;
-            padding: 14px;
-            border-radius: 4px;
-            font-weight: bold;
+            color: #ef4444;
+            padding: 4px 8px;
             cursor: pointer;
-            margin-top: 24px;
-            width: 100%;
+            font-size: 1.2rem;
         }
 
-        .generate-btn:disabled { background: #ccc; cursor: not-allowed; }
-
-        /* Preview Area */
+        /* Preview area */
         .preview-area {
             flex: 1;
-            padding: 40px;
+            padding: 40px 20px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 30px;
-            background: #e5e5e5;
+            gap: 40px;
+            background: #1f2937;
         }
 
         .preview-frame {
             background: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
             position: relative;
+            max-width: 95%;
         }
 
         .preview-frame img {
             display: block;
-            max-width: 100%;
+            width: 100%;
             height: auto;
-            max-height: 85vh; /* Keep it visible within screen height */
+            max-height: 80vh;
         }
 
-        .page-tag {
+        .page-counter {
             position: absolute;
-            top: -25px;
-            left: 0;
-            font-size: 0.75rem;
-            color: #555;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            left: -50px;
+            top: 0;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
         }
 
-        .empty-state { color: #888; margin-top: 20%; text-align: center; }
+        @media (max-width: 1000px) { .page-counter { left: 0; top: -25px; } }
+
+        .generate-btn {
+            background: #111827;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: auto;
+            transition: transform 0.1s;
+        }
+
+        .generate-btn:active { transform: scale(0.98); }
+        .generate-btn:disabled { background: #d1d5db; cursor: not-allowed; }
+
+        .empty-state { color: #9ca3af; text-align: center; margin-top: 100px; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h1>PDF Generator</h1>
-        <p class="subtitle">Upload, reorder, and convert images to a custom-sized PDF.</p>
+        <p class="subtitle">Drag and drop images to reorder them.</p>
 
-        <div class="input-group">
-            <label>Add Images</label>
-            <input type="file" id="imageInput" accept="image/*" multiple>
-        </div>
+        <label class="btn-upload">
+            <span>+ Add Images</span>
+            <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+        </label>
 
-        <div class="file-list" id="fileList"></div>
+        <div id="fileList"></div>
 
         <button id="generateBtn" class="generate-btn" disabled>Download PDF</button>
     </div>
 
     <div class="preview-area" id="previewArea">
-        <div class="empty-state">Your PDF preview will appear here.</div>
+        <div class="empty-state">No images added yet.</div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
     <script>
         const imageInput = document.getElementById('imageInput');
         const previewArea = document.getElementById('previewArea');
@@ -165,116 +190,102 @@
         
         let imagesArray = [];
 
+        // Initialize SortableJS
+        const sortable = new Sortable(fileList, {
+            animation: 150,
+            handle: '.file-item', // The whole card is a handle
+            ghostClass: 'sortable-ghost',
+            onEnd: function() {
+                // Synchronize the array with the new DOM order
+                const newOrder = [];
+                fileList.querySelectorAll('.file-item').forEach(el => {
+                    const id = el.getAttribute('data-id');
+                    newOrder.push(imagesArray.find(img => img.id === id));
+                });
+                imagesArray = newOrder;
+                renderPreviews(); // Update the big previews to match
+            }
+        });
+
         imageInput.addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
             for (const file of files) {
-                const dataUrl = await readFileAsDataURL(file);
-                const dims = await getImageDimensions(dataUrl);
-                imagesArray.push({ name: file.name, data: dataUrl, w: dims.w, h: dims.h });
+                const dataUrl = await readFile(file);
+                const dims = await getDims(dataUrl);
+                imagesArray.push({
+                    id: Math.random().toString(36).substr(2, 9), // Unique ID for sorting
+                    name: file.name,
+                    data: dataUrl,
+                    w: dims.w,
+                    h: dims.h
+                });
             }
-            render();
+            renderAll();
             imageInput.value = '';
         });
 
-        function readFileAsDataURL(file) {
-            return new Promise(resolve => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.readAsDataURL(file);
+        function readFile(file) {
+            return new Promise(res => {
+                const r = new FileReader();
+                r.onload = (e) => res(e.target.result);
+                r.readAsDataURL(file);
             });
         }
 
-        function getImageDimensions(src) {
-            return new Promise(resolve => {
-                const img = new Image();
-                img.onload = () => resolve({ w: img.width, h: img.height });
-                img.src = src;
+        function getDims(src) {
+            return new Promise(res => {
+                const i = new Image();
+                i.onload = () => res({ w: i.width, h: i.height });
+                i.src = src;
             });
         }
 
-        // Move item in array
-        function moveItem(index, direction) {
-            const newIndex = index + direction;
-            if (newIndex < 0 || newIndex >= imagesArray.length) return;
-            const element = imagesArray.splice(index, 1)[0];
-            imagesArray.splice(newIndex, 0, element);
-            render();
+        function renderAll() {
+            renderList();
+            renderPreviews();
         }
 
-        function render() {
+        function renderList() {
             fileList.innerHTML = '';
-            previewArea.innerHTML = '';
-            
-            if (imagesArray.length === 0) {
-                previewArea.innerHTML = '<div class="empty-state">Your PDF preview will appear here.</div>';
-                generateBtn.disabled = true;
-                return;
-            }
-
-            generateBtn.disabled = false;
-
             imagesArray.forEach((img, i) => {
-                // --- SIDEBAR LIST ---
                 const item = document.createElement('div');
                 item.className = 'file-item';
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'file-name';
-                nameSpan.innerText = `${i + 1}. ${img.name}`;
-                
-                const controls = document.createElement('div');
-                controls.className = 'controls';
-
-                // Up Button
-                const upBtn = document.createElement('button');
-                upBtn.className = 'control-btn';
-                upBtn.innerHTML = '↑';
-                upBtn.disabled = (i === 0);
-                upBtn.onclick = () => moveItem(i, -1);
-
-                // Down Button
-                const downBtn = document.createElement('button');
-                downBtn.className = 'control-btn';
-                downBtn.innerHTML = '↓';
-                downBtn.disabled = (i === imagesArray.length - 1);
-                downBtn.onclick = () => moveItem(i, 1);
-
-                // Delete Button
-                const delBtn = document.createElement('button');
-                delBtn.className = 'control-btn remove-btn';
-                delBtn.innerHTML = '✕';
-                delBtn.onclick = () => { imagesArray.splice(i, 1); render(); };
-
-                controls.appendChild(upBtn);
-                controls.appendChild(downBtn);
-                controls.appendChild(delBtn);
-                
-                item.appendChild(nameSpan);
-                item.appendChild(controls);
+                item.setAttribute('data-id', img.id);
+                item.innerHTML = `
+                    <div class="handle">⠿</div>
+                    <div class="file-name">${img.name}</div>
+                    <button class="remove-btn" onclick="removeItem('${img.id}')">&times;</button>
+                `;
                 fileList.appendChild(item);
+            });
+            generateBtn.disabled = imagesArray.length === 0;
+        }
 
-                // --- PREVIEW AREA ---
+        function renderPreviews() {
+            previewArea.innerHTML = '';
+            if (imagesArray.length === 0) {
+                previewArea.innerHTML = '<div class="empty-state">No images added yet.</div>';
+                return;
+            }
+            imagesArray.forEach((img, i) => {
                 const frame = document.createElement('div');
                 frame.className = 'preview-frame';
-                frame.style.width = img.w > img.h ? '800px' : '500px'; // Adaptive preview sizing
-                
-                const tag = document.createElement('div');
-                tag.className = 'page-tag';
-                tag.innerText = `Page ${i + 1}`;
-
-                const previewImg = document.createElement('img');
-                previewImg.src = img.data;
-                
-                frame.appendChild(tag);
-                frame.appendChild(previewImg);
+                frame.style.width = img.w > img.h ? 'min(800px, 90%)' : 'min(500px, 80%)';
+                frame.innerHTML = `
+                    <div class="page-counter">P${i+1}</div>
+                    <img src="${img.data}">
+                `;
                 previewArea.appendChild(frame);
             });
         }
 
+        window.removeItem = (id) => {
+            imagesArray = imagesArray.filter(img => img.id !== id);
+            renderAll();
+        };
+
         generateBtn.addEventListener('click', () => {
             const { jsPDF } = window.jspdf;
-            
-            // First page setup
             const pdf = new jsPDF({
                 orientation: imagesArray[0].w > imagesArray[0].h ? 'l' : 'p',
                 unit: 'px',
@@ -282,14 +293,12 @@
             });
 
             imagesArray.forEach((img, i) => {
-                if (i > 0) {
-                    pdf.addPage([img.w, img.h], img.w > img.h ? 'l' : 'p');
-                }
-                const format = img.data.includes('png') ? 'PNG' : 'JPEG';
-                pdf.addImage(img.data, format, 0, 0, img.w, img.h);
+                if (i > 0) pdf.addPage([img.w, img.h], img.w > img.h ? 'l' : 'p');
+                const fmt = img.data.includes('png') ? 'PNG' : 'JPEG';
+                pdf.addImage(img.data, fmt, 0, 0, img.w, img.h);
             });
 
-            pdf.save('reordered_document.pdf');
+            pdf.save('my_document.pdf');
         });
     </script>
 </body>
