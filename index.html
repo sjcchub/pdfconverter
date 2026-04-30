@@ -3,56 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo to PDF Converter</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Image to PDF Converter</title>
+    <!-- Importing Google Fonts for a cleaner look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg: #F3F4F6;
+            --text: #1F2937;
+            --border: #D1D5DB;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: var(--text);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            background-color: #F9FAFB;
+            transition: border-color 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-upload {
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .custom-file-upload:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            text-align: left;
+        }
+
+        .preview-card {
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            aspect-ratio: 1 / 1;
+        }
+
+        .preview-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .generate-btn {
+            background-color: #10B981;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 2rem;
+            transition: opacity 0.3s;
+        }
+
+        .generate-btn:hover {
+            background-color: #059669;
+        }
+
+        .generate-btn:disabled {
+            background-color: #9CA3AF;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+    </style>
 </head>
 <body>
+
     <div class="container">
-        <header>
-            <h1>📸 Photo to PDF Converter</h1>
-            <p>Upload your photos and combine them into a single PDF</p>
-        </header>
+        <h1>Image to PDF Converter</h1>
+        <p>Select one or more photos to combine into a single PDF document.</p>
 
-        <main>
-            <!-- Upload Area -->
-            <section class="upload-section">
-                <div class="upload-box" id="uploadBox">
-                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                    <h2>Drag photos here or click to browse</h2>
-                    <p>Supported formats: JPG, PNG, GIF, BMP</p>
-                    <input type="file" id="fileInput" multiple accept="image/*" hidden>
-                </div>
-            </section>
+        <div class="upload-area">
+            <label for="imageInput" class="custom-file-upload">
+                Choose Images
+            </label>
+            <input type="file" id="imageInput" accept="image/png, image/jpeg, image/jpg" multiple>
+            <p style="font-size: 0.875rem; color: #6B7280; margin-top: 1rem;">Supports JPG, JPEG, PNG</p>
+        </div>
 
-            <!-- Photos Preview -->
-            <section class="preview-section">
-                <div class="section-header">
-                    <h2>Uploaded Photos (<span id="photoCount">0</span>)</h2>
-                    <button id="clearBtn" class="btn btn-secondary" disabled>Clear All</button>
-                </div>
-                <div class="photos-grid" id="photosGrid">
-                    <p class="empty-message">No photos uploaded yet</p>
-                </div>
-            </section>
+        <div class="preview-container" id="previewContainer"></div>
 
-            <!-- Action Buttons -->
-            <section class="action-section">
-                <button id="generateBtn" class="btn btn-primary" disabled>
-                    <span>Generate PDF</span>
-                </button>
-            </section>
-        </main>
-
-        <footer>
-            <p>&copy; 2026 Photo to PDF Converter | Perfect for students and professionals</p>
-        </footer>
+        <button id="generateBtn" class="generate-btn" disabled>Generate & Download PDF</button>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="script.js"></script>
+    <!-- Load jsPDF from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const generateBtn = document.getElementById('generateBtn');
+        
+        let imagesArray = [];
+
+        // Handle file selection
+        imageInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            
+            files.forEach(file => {
+                if (!file.type.match('image.*')) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const imageDataUrl = event.target.result;
+                    imagesArray.push({
+                        name: file.name,
+                        data: imageDataUrl
+                    });
+                    renderPreview();
+                    updateGenerateButton();
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            // Clear input so the same files can be selected again if needed
+            imageInput.value = ''; 
+        });
+
+        // Render the image preview grid
+        function renderPreview() {
+            previewContainer.innerHTML = '';
+            
+            imagesArray.forEach((imgObj, index) => {
+                const card = document.createElement('div');
+                card.className = 'preview-card';
+                
+                const img = document.createElement('img');
+                img.src = imgObj.data;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '✕';
+                removeBtn.onclick = () => {
+                    imagesArray.splice(index, 1);
+                    renderPreview();
+                    updateGenerateButton();
+                };
+                
+                card.appendChild(img);
+                card.appendChild(removeBtn);
+                previewContainer.appendChild(card);
+            });
+        }
+
+        // Enable/Disable the generate button based on array length
+        function updateGenerateButton() {
+            if (imagesArray.length > 0) {
+                generateBtn.removeAttribute('disabled');
+            } else {
+                generateBtn.setAttribute('disabled', 'true');
+            }
+        }
+
+        // Handle PDF generation
+        generateBtn.addEventListener('click', async () => {
+            if (imagesArray.length === 0) return;
+            
+            // Change button state to show progress
+            const originalText = generateBtn.innerText;
+            generateBtn.innerText = "Generating PDF...";
+            generateBtn.disabled = true;
+
+            // Initialize jsPDF (A4 size by default)
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            // Loop through images and add to PDF
+            for (let i = 0; i < imagesArray.length; i++) {
+                if (i > 0) {
+                    pdf.addPage();
+                }
+
+                const imgData = imagesArray[i].data;
+                
+                // We need to load the image dynamically to get its natural dimensions
+                const img = await loadImage(imgData);
+                
+                // Calculate aspect ratios to fit the image on the A4 page
+                const imgRatio = img.width / img.height;
+                const pageRatio = pageWidth / pageHeight;
+                
+                let renderWidth, renderHeight;
+
+                // Scale the image down to fit within the page margins (10mm padding)
+                const padding = 10;
+                const maxRenderWidth = pageWidth - (padding * 2);
+                const maxRenderHeight = pageHeight - (padding * 2);
+
+                if (imgRatio > (maxRenderWidth / maxRenderHeight)) {
+                    renderWidth = maxRenderWidth;
+                    renderHeight = maxRenderWidth / imgRatio;
+                } else {
+                    renderHeight = maxRenderHeight;
+                    renderWidth = maxRenderHeight * imgRatio;
+                }
+                
+                // Center the image horizontally and vertically
+                const x = (pageWidth - renderWidth) / 2;
+                const y = (pageHeight - renderHeight) / 2;
+                
+                // Determine format (JPEG or PNG)
+                const format = imgData.substring(5, imgData.indexOf(';')).includes('png') ? 'PNG' : 'JPEG';
+                
+                pdf.addImage(imgData, format, x, y, renderWidth, renderHeight);
+            }
+
+            // Save the document
+            pdf.save('Generated_Document.pdf');
+            
+            // Reset button
+            generateBtn.innerText = originalText;
+            generateBtn.disabled = false;
+        });
+
+        // Helper function to load image to get dimensions
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+    </script>
 </body>
 </html>
