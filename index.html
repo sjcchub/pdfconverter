@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo to PDF Converter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📸 Photo to PDF Converter</h1>
+            <p>Upload your photos and combine them into a single PDF</p>
+        </header>
+
+        <main>
+            <!-- Upload Area -->
+            <section class="upload-section">
+                <div class="upload-box" id="uploadBox">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <h2>Drag photos here or click to browse</h2>
+                    <p>Supported formats: JPG, PNG, GIF, BMP</p>
+                    <input type="file" id="fileInput" multiple accept="image/*" hidden>
+                </div>
+            </section>
+
+            <!-- Photos Preview -->
+            <section class="preview-section">
+                <div class="section-header">
+                    <h2>Uploaded Photos (<span id="photoCount">0</span>)</h2>
+                    <button id="clearBtn" class="btn btn-secondary" disabled>Clear All</button>
+                </div>
+                <div class="photos-grid" id="photosGrid">
+                    <p class="empty-message">No photos uploaded yet</p>
+                </div>
+            </section>
+
+            <!-- Action Buttons -->
+            <section class="action-section">
+                <button id="generateBtn" class="btn btn-primary" disabled>
+                    <span>Generate PDF</span>
+                </button>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Photo to PDF Converter | Perfect for students and professionals</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
